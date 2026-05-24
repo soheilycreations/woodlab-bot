@@ -30,10 +30,29 @@ export default function KnowledgeBasePage() {
   }
 
   async function fetchDocs() {
-    const res = await fetch(`${BACKEND_URL}/api/docs?shopId=${SHOP_ID}`);
-    setDocs(await res.json());
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/docs?shopId=${SHOP_ID}`);
+      
+      if (!res.ok) {
+        console.error("Backend error:", await res.text());
+        setDocs([]); // Error එකක් ආවොත් පේජ් එක crash නොවෙන්න හිස් Array එකක් දාන්න
+        return;
+      }
+      
+      const data = await res.json();
+      
+      // ලැබෙන දත්ත Array එකක් දැයි අනිවාර්යයෙන්ම පරීක්ෂා කරන්න
+      if (Array.isArray(data)) {
+        setDocs(data);
+      } else {
+        console.error("Data received is not an array:", data);
+        setDocs([]);
+      }
+    } catch (err) {
+      console.error("Fetch docs error:", err);
+      setDocs([]); // Network error වගේ එකක් ආවත් හිස් Array එකක් දාන්න
+    }
   }
-
   async function fetchShop() {
     const res = await fetch(`${BACKEND_URL}/api/shop/${SHOP_ID}`);
     const data = await res.json();
